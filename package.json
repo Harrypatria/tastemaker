@@ -1,0 +1,19 @@
+{
+  "name": "tastemaker",
+  "version": "1.0.0",
+  "description": "The anti-slop design layer for AI coders: design skills, a zero-dependency slop scanner, token builder and platform prompts for Claude Code, Google AI Studio, Lovable, Replit, Cursor and more.",
+  "type": "module",
+  "bin": { "tastemaker": "bin/tastemaker.mjs" },
+  "files": ["bin", "skills", "agents", "commands", "hooks", "adapters", "dist", ".claude-plugin", "README.md", "LICENSE"],
+  "engines": { "node": ">=18" },
+  "scripts": {
+    "test": "node --test tests/*.test.mjs",
+    "check": "node scripts/check-skills.mjs",
+    "build:adapters": "node scripts/build-adapters.mjs",
+    "verify": "npm run check && npm test && node skills/taste-tokens/scripts/build-tokens.mjs skills/taste-tokens/templates/design-tokens.json --check"
+  },
+  "keywords": ["claude-code", "claude-skills", "ui", "ux", "design-system", "anti-slop", "ai-slop", "tailwind", "shadcn", "accessibility", "vibe-coding", "lovable", "replit", "google-ai-studio", "cursor"],
+  "author": "Harry",
+  "license": "MIT",
+  "repository": { "type": "git", "url": "git+https://github.com/Harrypatria/tastemaker.git" }
+}

@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Deck title</title>
+<style>
+  /* Tokens: replace from design-tokens.json (taste-tokens). */
+  :root {
+    --bg: #F7F8FA; --surface: #FFFFFF; --text: #171B21; --muted: #515966; --border: #DDE1E7;
+    --primary: #0F4C81; --on-primary: #FFFFFF; --highlight: #0F4C81; --grid: #DDE1E7;
+    --series-1: #0072B2; --series-2: #E69F00; --series-3: #009E73; --neutral-series: #98A1AE;
+    --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --dur: 200ms; --ease: cubic-bezier(.2,0,0,1);
+  }
+  [data-theme="dark"] {
+    --bg: #0E1116; --surface: #171B21; --text: #EEF0F3; --muted: #98A1AE; --border: #262B33;
+    --primary: #7AAEE0; --on-primary: #0E1116; --highlight: #7AAEE0; --grid: #262B33; --series-1: #56B4E9; --neutral-series: #515966;
+  }
+  @media (prefers-reduced-motion: reduce) { :root { --dur: 0ms; } }
+  * { box-sizing: border-box; margin: 0; }
+  html, body { height: 100%; background: var(--bg); color: var(--text); font-family: var(--font-sans); }
+  .stage { position: fixed; inset: 0; overflow: hidden; }
+  .deck { width: 1920px; height: 1080px; position: absolute; left: 50%; top: 50%; transform-origin: center; }
+  .slide { position: absolute; inset: 0; padding: 96px; display: grid; grid-template-rows: auto 1fr auto; gap: 48px;
+    background: var(--surface); opacity: 0; visibility: hidden; transition: opacity var(--dur) var(--ease); }
+  .slide.active { opacity: 1; visibility: visible; }
+  .slide h1 { font-size: 72px; line-height: 1.1; letter-spacing: -0.02em; font-weight: 600; max-width: 22ch; }
+  .slide h2 { font-size: 56px; line-height: 1.15; letter-spacing: -0.02em; font-weight: 600; max-width: 28ch; }
+  .slide p, .slide li { font-size: 32px; line-height: 1.4; color: var(--muted); max-width: 40ch; }
+  .slide ul { display: grid; gap: 24px; padding-left: 1.2em; }
+  .eyebrow { font-size: 24px; letter-spacing: .06em; text-transform: uppercase; color: var(--primary); font-weight: 600; }
+  .big { font-size: 160px; font-weight: 600; line-height: 1; font-variant-numeric: tabular-nums; color: var(--text); }
+  .foot { display: flex; justify-content: space-between; font-size: 20px; color: var(--muted); }
+  .cols { display: grid; grid-template-columns: 2fr 1fr; gap: 64px; align-items: center; }
+  .chart { position: relative; height: 640px; }
+  .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  .progress { position: fixed; left: 0; bottom: 0; height: 4px; background: var(--primary); transition: width var(--dur) var(--ease); }
+  .notes { position: fixed; right: 16px; bottom: 16px; width: min(480px, 90vw); max-height: 40vh; overflow: auto; padding: 16px;
+    background: var(--surface); border: 1px solid var(--border); border-radius: 8px; font-size: 16px; line-height: 1.5; display: none; }
+  .notes.open { display: block; }
+  body.overview .stage { position: static; display: block; overflow: auto; padding: 24px; }
+  body.overview .deck { position: static; width: auto; height: auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px; }
+  body.overview .slide { position: relative; opacity: 1; visibility: visible; aspect-ratio: 16/9; padding: 24px; gap: 8px; cursor: pointer; border: 2px solid var(--border); overflow: hidden; }
+  body.overview .slide * { font-size: 14px; }
+  body.overview .slide.active { border-color: var(--primary); }
+  @media (max-width: 900px) {
+    .stage { position: static; display: block; overflow: visible; }
+    .deck { position: static; width: auto; height: auto; }
+    .slide { position: relative; opacity: 1; visibility: visible; padding: 32px 16px; gap: 24px; border-bottom: 1px solid var(--border); }
+    .slide h1 { font-size: 36px; } .slide h2 { font-size: 28px; } .slide p, .slide li { font-size: 18px; }
+    .big { font-size: 72px; } .cols { grid-template-columns: 1fr; } .chart { height: 320px; } .foot { font-size: 14px; }
+  }
+  @media print {
+    @page { size: 1920px 1080px; margin: 0; }
+    .stage { position: static; display: block; } .deck { position: static; width: 1920px; height: auto; }
+    .slide { position: relative; opacity: 1; visibility: visible; width: 1920px; height: 1080px; break-after: page; }
+    .progress, .notes, .notes.open { display: none; }
+  }
+</style>
+</head>
+<body>
+<div class="stage">
+  <main class="deck" id="deck" aria-roledescription="carousel" aria-label="Presentation">
+
+    <section class="slide" data-notes="Open with the answer. Talk track: ... Transition: here is what drove it.">
+      <p class="eyebrow">Q3 review · Customer success</p>
+      <h1>Churn fell 18% after we rebuilt onboarding</h1>
+      <div class="foot"><span>Presenter name · Date</span><span>Company</span></div>
+    </section>
+
+    <section class="slide" data-notes="Source: billing export. Likely question: is this seasonal? Answer: Q3 last year rose 4%.">
+      <h2>Monthly churn dropped from 3.9% to 3.2% within two cycles</h2>
+      <div class="cols">
+        <div class="chart">
+          <canvas id="churn" role="img" aria-label="Line chart: monthly churn fell from 3.9% in June to 3.2% in September"></canvas>
+          <table class="sr-only"><caption>Monthly churn</caption><tr><th>Month</th><th>Churn</th></tr>
+            <tr><td>Jun</td><td>3.9%</td></tr><tr><td>Jul</td><td>3.8%</td></tr><tr><td>Aug</td><td>3.4%</td></tr><tr><td>Sep</td><td>3.2%</td></tr></table>
+        </div>
+        <ul><li>New checklist shipped 1 Aug</li><li>Activation rose to 61%</li></ul>
+      </div>
+      <div class="foot"><span>Illustrative sample data. Replace with the billing export.</span><span>2</span></div>
+    </section>
+
+    <section class="slide" data-notes="One action, one owner, one date.">
+      <p class="eyebrow">Decision needed</p>
+      <h2>Fund two more onboarding engineers to reach 2.8% churn by Q1</h2>
+      <div class="foot"><span>Owner · Decision by date</span><span>3</span></div>
+    </section>
+
+  </main>
+</div>
+<div class="progress" id="progress"></div>
+<aside class="notes" id="notes" aria-label="Speaker notes"></aside>
+<div class="sr-only" aria-live="polite" id="live"></div>
+
+<!-- Chart.js pinned version; add an SRI hash for production, or vendor the file in Portable Mode -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js" defer></script>
+<script type="module">
+  const deck = document.getElementById('deck')
+  const slides = [...deck.querySelectorAll('.slide')]
+  const notes = document.getElementById('notes')
+  let i = Math.max(0, Math.min(slides.length - 1, (parseInt(location.hash.slice(2), 10) || 1) - 1))
+
+  // Scale the 1920x1080 stage to fit; overview, print and narrow screens use normal flow instead.
+  function fit(flow = document.body.classList.contains('overview') || innerWidth <= 900) {
+    const s = Math.min(innerWidth / 1920, innerHeight / 1080)
+    deck.style.transform = flow ? '' : `translate(-50%, -50%) scale(${s})`
+  }
+  function go(n) {
+    i = Math.max(0, Math.min(slides.length - 1, n))
+    slides.forEach((el, k) => {
+      el.classList.toggle('active', k === i)
+      el.setAttribute('aria-label', `${k + 1} of ${slides.length}`)
+      el.toggleAttribute('inert', k !== i && !document.body.classList.contains('overview'))
+    })
+    history.replaceState(null, '', `#/${i + 1}`)
+    document.getElementById('progress').style.width = `${((i + 1) / slides.length) * 100}%`
+    document.getElementById('live').textContent = `Slide ${i + 1} of ${slides.length}: ${slides[i].querySelector('h1,h2')?.textContent ?? ''}`
+    notes.textContent = slides[i].dataset.notes ?? ''
+  }
+  function toggleOverview() {
+    document.body.classList.toggle('overview')
+    fit()
+    go(i)
+  }
+
+  addEventListener('keydown', (e) => {
+    if (e.target.closest('input, textarea, select')) return
+    const k = e.key
+    if (['ArrowRight', 'PageDown', ' '].includes(k)) { e.preventDefault(); go(i + 1) }
+    else if (['ArrowLeft', 'PageUp'].includes(k)) { e.preventDefault(); go(i - 1) }
+    else if (k === 'Home') go(0)
+    else if (k === 'End') go(slides.length - 1)
+    else if (k === 'n' || k === 'N') notes.classList.toggle('open')
+    else if (k === 'o' || k === 'O') toggleOverview()
+    else if (k === 'Escape' && document.body.classList.contains('overview')) toggleOverview()
+    else if (k === 't' || k === 'T') { document.documentElement.dataset.theme = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark'; renderCharts() }
+    else if (k === 'f' || k === 'F') document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen?.()
+    else if (/^\d$/.test(k)) jump += k
+    else if (k === 'Enter' && jump) { go(parseInt(jump, 10) - 1); jump = '' }
+  })
+  let jump = ''
+  slides.forEach((el, k) => el.addEventListener('click', () => { if (document.body.classList.contains('overview')) { toggleOverview(); go(k) } }))
+  let x0 = null
+  addEventListener('touchstart', (e) => { x0 = e.touches[0].clientX }, { passive: true })
+  addEventListener('touchend', (e) => {
+    if (x0 === null) return
+    const dx = e.changedTouches[0].clientX - x0
+    if (Math.abs(dx) > 50) go(i + (dx < 0 ? 1 : -1))
+    x0 = null
+  })
+  addEventListener('resize', () => fit())
+  addEventListener('beforeprint', () => fit(true))
+  addEventListener('afterprint', () => fit())
+  addEventListener('hashchange', () => go((parseInt(location.hash.slice(2), 10) || 1) - 1))
+  fit()
+  go(i)
+
+  // Charts read token colors at render time; re-rendered on theme change.
+  function renderCharts() {
+    if (!window.Chart) return
+    const css = (v) => getComputedStyle(document.documentElement).getPropertyValue(v).trim()
+    Chart.defaults.font.family = css('--font-sans')
+    Chart.defaults.font.size = 20
+    Chart.defaults.color = css('--muted')
+    const canvas = document.getElementById('churn')
+    Chart.getChart(canvas)?.destroy()
+    if (canvas) new Chart(canvas, {
+      type: 'line',
+      data: { labels: ['Jun', 'Jul', 'Aug', 'Sep'], datasets: [{ data: [3.9, 3.8, 3.4, 3.2], borderColor: css('--highlight'), borderWidth: 4, pointRadius: 6, tension: 0.25 }] },
+      options: {
+        responsive: true, maintainAspectRatio: false, animation: matchMedia('(prefers-reduced-motion: reduce)').matches ? false : { duration: 400 },
+        plugins: { legend: { display: false }, tooltip: { callbacks: { label: (c) => `${c.parsed.y}% churn` } } },
+        scales: { x: { grid: { display: false } }, y: { grid: { color: css('--grid') }, ticks: { callback: (v) => `${v}%` }, title: { display: true, text: 'Monthly churn (%)' } } },
+      },
+    })
+  }
+  addEventListener('load', renderCharts)
+</script>
+</body>
+</html>

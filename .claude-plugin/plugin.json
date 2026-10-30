@@ -1,0 +1,10 @@
+{
+  "name": "tastemaker",
+  "version": "1.0.0",
+  "description": "Taste for AI coders. 11 design skills, a zero-dependency slop scanner, a self-correcting hook and a critic agent that stop Claude from shipping generic, inaccessible, half-wired UI. Brief, taste, tokens, components, guard, audit, brand, identity, banners, slides.",
+  "author": { "name": "Harry" },
+  "license": "MIT",
+  "homepage": "https://github.com/Harrypatria/tastemaker",
+  "repository": "https://github.com/Harrypatria/tastemaker",
+  "keywords": ["ui", "ux", "design", "frontend", "anti-slop", "design-system", "tailwind", "shadcn", "accessibility", "vibe-coding", "lovable", "replit", "google-ai-studio"]
+}
