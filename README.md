@@ -138,6 +138,36 @@ No slop found.
 
 In Claude Code you do not run the scanner by hand. The plugin hook scans each file the agent writes and returns errors to the agent immediately.
 
+### The scan and fix cycle
+ 
+<table align="center">
+  <thead>
+    <tr>
+      <th align="center">Step 1 &middot; Scan</th>
+      <th align="center">Step 2 &middot; Fix</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td align="center" valign="top" width="50%">
+        <a href="assets/scan.png">
+          <img src="assets/scan.png" alt="Tastemaker scanner output listing slop findings with rule IDs, severity levels and a Taste score" width="340">
+        </a>
+      </td>
+      <td align="center" valign="top" width="50%">
+        <a href="assets/fix.png">
+          <img src="assets/fix.png" alt="The agent resolving scanner findings and rescanning until the Taste score is clean" width="340">
+        </a>
+      </td>
+    </tr>
+    <tr>
+      <td align="center"><sub>The scanner reports each finding with a rule ID, severity and line number.</sub></td>
+      <td align="center"><sub>The agent fixes each finding at its cause, then rescans.</sub></td>
+    </tr>
+  </tbody>
+</table>
+<p align="center"><sub>Select an image to open it at full size.</sub></p>
+
 ## Install
 
 Pick the row that matches where you build.
